@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- FORM -->
+    <record id="view_nc_report_designer_form" model="ir.ui.view">
+        <field name="name">nc.report.designer.form</field>
+        <field name="model">nc.report.designer</field>
+        <field name="arch" type="xml">
+            <form string="Diseñador de Reportes NC">
+                <header>
+                    <button name="action_convert_jrxml" string="⚙ Generar / Actualizar Reporte" type="object" class="oe_highlight"/>
+                    <button name="action_delete_generated" string="🗑 Limpiar" type="object" class="btn-secondary" confirm="¿Limpiar generados?"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Nombre Reporte"/>
+                        <h1><field name="name" placeholder="Nombre del Reporte"/></h1>
+                    </div>
+
+                    <!-- NUEVO: Muestra el botón creado Print Flash 1, 2 -->
+                    <div class="alert alert-success" role="alert" invisible="state != 'done'">
+                        <div class="d-flex align-items-center">
+                            <i class="fa fa-bolt me-2"/>
+                            <strong class="me-2">Botón creado:</strong>
+                            <field name="print_button_name" nolabel="1" class="oe_inline" readonly="1" widget="badge" decoration-success="1"/>
+                            <span class="ms-3 text-muted">en modelo <field name="model_name" class="oe_inline ms-1" readonly="1" nolabel="1"/></span>
+                        </div>
+                        <small class="text-muted">Aparece en el formulario del modelo base. Si creas otro reporte en el mismo modelo se crea Print Flash 2, 3, etc.</small>
+                    </div>
+
+                    <group>
+                        <group string="Modelo Base">
+                            <field name="model_id" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="model_name" invisible="1"/>
+                            <field name="detail_field_id" options="{'no_create': True, 'no_open': True}" domain="[('model_id','=',model_id),('ttype','=','one2many')]" string="Campo líneas (One2many)"/>
+                            <field name="detail_model_id" invisible="1"/>
+                        </group>
+                        <group string="JRXML / Reporte">
+                            <field name="jrxml_file" filename="jrxml_filename"/>
+                            <field name="jrxml_filename" invisible="1"/>
+                            <field name="jrxml_hash" readonly="1"/>
+                            <field name="paperformat_id" readonly="1"/>
+                            <field name="report_action_id" readonly="1"/>
+                            <field name="print_flash_view_id" readonly="1" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <div class="alert alert-success mt-3" role="alert">
+                        <field name="available_model_fields" nolabel="1" readonly="1"/>
+                    </div>
+
+                    <notebook>
+                        <page string="📋 ENCABEZADO" name="header">
+                            <separator string="✏ Mapeo Encabezado - Etiqueta JRXML → Campo Odoo del modelo principal"/>
+                            <field name="header_alias_ids" nolabel="1" context="{'default_designer_id': id, 'default_alias_type': 'header'}">
+                                <list editable="bottom">
+                                    <field name="alias_type" column_invisible="1"/>
+                                    <field name="jrxml_tag" placeholder="Ej: cliente, company_name, $F{partner_id}"/>
+                                    <field name="field_id" options="{'no_create': True, 'no_open': True}" domain="[('model_id','=', parent.model_id)]" placeholder="Campo Odoo..." required="1"/>
+                                    <field name="odoo_field_name" readonly="1" optional="show"/>
+                                    <field name="field_type" readonly="1" optional="show"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="📑 LÍNEAS (Detalle)" name="lines">
+                            <separator string="✏ Mapeo Líneas - Etiqueta JRXML → Campo Odoo del modelo detalle"/>
+                            <field name="line_alias_ids" nolabel="1" context="{'default_designer_id': id, 'default_alias_type': 'line'}">
+                                <list editable="bottom">
+                                    <field name="alias_type" column_invisible="1"/>
+                                    <field name="jrxml_tag" placeholder="Ej: producto, price_unit, $F{quantity}"/>
+                                    <field name="field_id" options="{'no_create': True, 'no_open': True}" domain="[('model_id','=', parent.detail_model_id)]" placeholder="Campo de líneas..." required="1"/>
+                                    <field name="odoo_field_name" readonly="1" optional="show"/>
+                                    <field name="field_type" readonly="1" optional="show"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="🔧 PARÁMETROS / $P $V" name="params_vars">
+                            <div class="alert alert-info" role="alert">
+                                <h4>📋 Parámetros $P y Variables $V (No necesita mapeo)</h4>
+                                <p>Copia y pega directo en Jaspersoft Studio. Soporta <b>$P $V $F</b> indistintamente.</p>
+                            </div>
+                            <field name="available_params_vars" nolabel="1" readonly="1" sanitize="false"/>
+                        </page>
+
+                        <page string="🧮 CÁLCULOS" name="calculos">
+                            <div class="alert alert-info">
+                                <b>Usa alias renombrados + encadenados.</b> Ej: si renombraste price_unit → precio<br/>
+                                <code>subtotal = precio * cantidad</code> | <code>total = SUM(subtotal)</code> (para Summary/Footer)<br/>
+                                <code>gran_total = total + SUM(iva)</code>
+                            </div>
+                            <field name="calculated_ids" nolabel="1">
+                                <list editable="bottom">
+                                    <field name="jrxml_tag" string="Tag JRXML" placeholder="Ej: total"/>
+                                    <field name="python_calc" string="Cálculo Python" placeholder="Ej: precio * cantidad o SUM(subtotal)"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="🖼 Logos" name="logos">
+                            <div class="alert alert-warning" role="alert">
+                                Las imágenes tipo FILE que vienen como <code>C:\...\logo.png</code> en el JRXML se buscan en <b>nc_report_flash/report/</b> por basename. Para logos binarios usa la tabla.
+                            </div>
+                            <field name="logo_ids" nolabel="1">
+                                <list editable="bottom">
+                                    <field name="key" placeholder="LOGO_FACTURA" required="1"/>
+                                    <field name="logo" widget="image" required="1"/>
+                                </list>
+                            </field>
+                        </page>
+
+
+                        <page string="💻 Debug" name="code">
+                            <group>
+                                <field name="header_alias_map" readonly="1" widget="ace" options="{'mode': 'json'}" string="Header Map"/>
+                                <field name="line_alias_map" readonly="1" widget="ace" options="{'mode': 'json'}" string="Line Map"/>
+                                <field name="print_button_name" string="Nombre Botón Calculado"/>
+                            </group>
+                            <field name="qweb_generated" widget="ace" options="{'mode': 'xml'}" readonly="1" invisible="1"/>
+                            <field name="cached_elements" widget="ace" options="{'mode': 'json'}" readonly="1" invisible="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- LISTA -->
+    <record id="view_nc_report_designer_list" model="ir.ui.view">
+        <field name="name">nc.report.designer.list</field>
+        <field name="model">nc.report.designer</field>
+        <field name="arch" type="xml">
+            <list string="Diseñador de Reportes NC">
+                <field name="name"/>
+                <field name="model_id"/>
+                <field name="detail_field_id"/>
+                <field name="print_button_name" widget="badge" decoration-success="1" optional="show"/>
+                <field name="state" widget="badge" decoration-success="state == 'done'" decoration-info="state == 'draft'"/>
+                <field name="report_action_id" optional="hide"/>
+                <field name="print_flash_view_id" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_nc_report_designer" model="ir.actions.act_window">
+        <field name="name">Diseñador de Reportes NC</field>
+        <field name="res_model">nc.report.designer</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_nc_report_designer_root" name="Reportes NC" sequence="10"/>
+    <menuitem id="menu_nc_report_designer_action" name="Diseñador" parent="menu_nc_report_designer_root" action="action_nc_report_designer" sequence="10"/>
+</odoo>

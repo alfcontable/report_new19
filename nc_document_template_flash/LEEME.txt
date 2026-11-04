@@ -1,0 +1,39 @@
+=========================
+NC Report Flash (JRXML)
+=========================
+
+**NC Report Flash** es un potente motor de reportes para Odoo que permite utilizar plantillas de diseño profesional creadas en **Jaspersoft Studio (.jrxml)** y renderizarlas de manera nativa utilizando **ReportLab**, sin necesidad de configurar servidores Java externos ni lidiar con dependencias complejas.
+
+Características Principales
+---------------------------
+* **100% Nativo:** Utiliza el motor de ReportLab integrado en Odoo.
+* **Sin Servidor Java:** Olvídate de instalar y mantener servicios de JasperReports externos.
+* **Portabilidad Total:** Cero rutas absolutas del sistema operativo (`C:\...`). Funciona perfectamente en Windows, Ubuntu, Docker y Odoo.sh.
+* **Mapeo Inteligente:** Soporta campos de cabecera, líneas de detalle (`One2many`), campos calculados con Python y sumatorios automáticos.
+* **Botones Dinámicos:** Genera automáticamente el botón de impresión en el formulario del modelo seleccionado.
+
+Requisitos del Sistema
+----------------------
+* Odoo 17, 18 y 19.
+* Python librerías estándar de Odoo (ReportLab).
+
+Instalación
+-----------
+1. Descomprime o copia la carpeta `nc_document_template_flash` dentro de tu directorio de addons de Odoo.
+2. Actualiza la lista de aplicaciones en Odoo (activa el modo desarrollador).
+3. Busca el módulo **NC Report Flash** y haz clic en **Instalar**.
+
+Guía Rápida de Uso
+-------------------
+1. Ve al menú de configuración del módulo (o Diseñador de Reportes).
+2. Selecciona el modelo de Odoo al que deseas aplicar el formato (ej. `account.move` para Facturas o `sale.order` para Pedidos).
+3. Sube tu archivo de diseño **.jrxml** generado en Jaspersoft Studio.
+4. Configura el mapeo de campos (Encabezado y Líneas) y guarda los cambios.
+5. Abre un registro del modelo configurado y haz clic en el nuevo botón de impresión dinámico.
+
+Soporte y Licencia
+------------------
+* **Licencia:** OPL-1 (Odoo Proprietary License v1.0) - Uso comercial exclusivo bajo los términos de compra.
+* **Autor:** Nicacreator
+
+Compatibilidad: Odoo 19.

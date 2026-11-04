@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_nc_report_designer,designer,model_nc_report_designer,base.group_user,1,1,1,1
+access_nc_report_designer_field_alias,alias,model_nc_report_designer_field_alias,base.group_user,1,1,1,1
+access_nc_report_designer_logo,logo,model_nc_report_designer_logo,base.group_user,1,1,1,1
+access_nc_report_designer_calculated_field,calc,model_nc_report_designer_calculated_field,base.group_user,1,1,1,1
